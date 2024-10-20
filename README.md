@@ -1,42 +1,21 @@
-Spike-in pools “CTCF-7, CTCF-8, P12-10B, P12-14"
+### Example of an HTLV-1 integration site analysis
 
-Questions from Malachi
+Short hand sample names: “CTCF-7, CTCF-8, P12-10B, P12-14"
 
-Xiaogang, apologies in advance for the naïve questions, but to make sure we understand. Can you elaborate a bit on the experiment here?  Humanized mice (humanized how?) are infected with different strains of HTLV-1?  Four different strains here?  And we are looking for genome integrations in mice cells? or human cells?   How were the cells obtained for genomic DNA isolation (is this just from blood?).  The goal here is to identify the viral integration sites and quantify them to assess clonality?  Is there an expectation for degree of clonality we might observe.  Are we expecting to see many different unique integration sites in each sample?
+#### High level questions
 
+What are the experimental details here?  Humanized mice (humanized how?) are infected with different strains of HTLV-1?  Four different strains here?  And we are looking for genome integrations in mice cells? or human cells?   How were the cells obtained for genomic DNA isolation (is this just from blood?).  The goal here is to identify the viral integration sites and quantify them to assess clonality?  Is there an expectation for degree of clonality we might observe.  Are we expecting to see many different unique integration sites in each sample?
 
-Answers from Xiaogang Cheng, <chengxiaogang@wustl.edu>
+Brief answers:
+Genomic DNA was isolated from humanized mouse spleen that was infected with HTLV-1 p12(wt control) or CTCF mutant virus. p12-10B, p12-14 and CTCF-7, CTCF-8 are mouse ID numbers. We want to quantify the viral integration sites in infected human T cells to assess clonality. I expect to see many unique integration sites but don’t know what kinds of clonality that would be observed.
 
-Genomic DNA was isolated from humanized mouse spleen that was infected with HTLV-1 p12(wt control) or CTCF mutant virus. p12-10B, p12-14 and CTCF-7, CTCF-8 are mouse ID numbers. We want to quantify the viral integration sites in infected human T cells to assess clonality. I expect to see many unique integration sites but don’t know what kinds of clonality that would be observed. Attached is a sequencing protocol outline. Please let me know if you have any questions. Thanks!
-
-Answers from Lee Ratners
-
-Xiaogang, apologies in advance for the naïve questions, but to make sure we understand. Can you elaborate a bit on the experiment here?  Humanized mice (humanized how?) are infected with different strains of HTLV-1? 
-Yes, CD34+ cells injected in liver at 1d of life
-Infected with HTLV
+CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains – p12 and CTCF.  Analysis focused on human cell DNA. Samples were obtained from spleen. The goal here is to identify the viral integration sites and quantify them to assess clonality. Using Gini index value. 
  
-Four different strains here? 
-I think 2 strains – p12 and CTCF
- 
-And we are looking for genome integrations in mice cells? or human cells?  
-Only in human cells
- 
-How were the cells obtained for genomic DNA isolation (is this just from blood?).
-Spleen
- 
-The goal here is to identify the viral integration sites and quantify them to assess clonality?
-Yes, Gini index
- 
-Is there an expectation for degree of clonality we might observe. 
-Same or higher in one group than the other?
- 
-Are we expecting to see many different unique integration sites in each sample?
-Most likely and a few conserved within each animal
+#### Investigate the four supplies possible integration characteristic sequences:
+TTAGTACACA / AATCATGTGT
+TGACAATGAC / ACTGTTACTG
 
-# Investigate the four supplies possible integration characteristic sequences:
-# TTAGTACACA / AATCATGTGT
-# TGACAATGAC / ACTGTTACTG
-
+```
 export FASTQ_NAMES=("Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_" "Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_" "Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_" "Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_")
 export PAIRS=("R1" "R2")
 export SEQS=("TTAGTACACA" "AATCATGTGT" "TGACAATGAC" "ACTGTTACTG")
@@ -49,36 +28,49 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     done
   done
 done
+```
 
-# based on this analysis it seems that for these data in the RAW read sequences we only really see the "TTAGTACACA" sequence and only in Read 1 files
-# create unique read lists of these read identities and store them for later use
+Based on this analysis it seems that for these data in the RAW read sequences we only really see the "TTAGTACACA" sequence and only in Read 1 files
+
+#### Create unique read lists of these read identities and store them for later use
+
+```
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 only)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2"_"$3"_"$4"_"$5}')
     echo "Will name output using sample name: $SAMPLE"
     zcat fastqs/${FASTQ_NAME}R1_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TTTAGTACACA' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
 done
+```
 
+#### Details of reference sequences and alignments produced
 
-# GRCh38 reference copied from: /storage1/fs1/bga/Active/gmsroot/gc2560/core/GRC-human-build38_human_95_38_U2AF1_fix/all_sequences.fa
-# HTLV-1 reference obtained from: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/863/585/GCF_000863585.1_ViralProj15434/GCF_000863585.1_ViralProj15434_genomic.fna.gz
+GRCh38 reference copied from: `/storage1/fs1/bga/Active/gmsroot/gc2560/core/GRC-human-build38_human_95_38_U2AF1_fix/all_sequences.fa`
+HTLV-1 reference obtained from: `https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/863/585/GCF_000863585.1_ViralProj15434/GCF_000863585.1_ViralProj15434_genomic.fna.gz`
 
-# GRCh38 and HTLV-1 references catted together and BWA index and alignment done with BWA version 0.7.17-r1198-dirty
+GRCh38 and HTLV-1 references catted together and BWA index and alignment done with BWA version 0.7.17-r1198-dirty
 
+```
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_R1_001.fastq.gz Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_R2_001.fastq.gz | samtools view -o CTCF-7_SIC_934_SIC2.bam -Shb /dev/stdin
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_R1_001.fastq.gz Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_R2_001.fastq.gz | samtools view -o CTCF-8_SIC_935_SIC2.bam -Shb /dev/stdin
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_R1_001.fastq.gz Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_R2_001.fastq.gz | samtools view -o P12-10B_SIC_936_SIC2.bam -Shb /dev/stdin
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_R1_001.fastq.gz Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_R2_001.fastq.gz | samtools view -o P12-14_SIC_937_SIC2.bam -Shb /dev/stdin
+```
 
-# alignments converted to bam, sorted, and indexed with samtools version 1.11
-# duplicates marked with picard version 2.22.8
+#### Duplicate marking step
+alignments converted to bam, sorted, and indexed with samtools version 1.11
+duplicates marked with picard version 2.22.8
 
+```
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-7_SIC_934_SIC2.sorted.bam O=CTCF-7_SIC_934_SIC2.markedsorted.bam M=CTCF-7_SIC_934_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-8_SIC_935_SIC2.sorted.bam O=CTCF-8_SIC_935_SIC2.markedsorted.bam M=CTCF-8_SIC_935_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-10B_SIC_936_SIC2.sorted.bam O=P12-10B_SIC_936_SIC2.markedsorted.bam M=P12-10B_SIC_936_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-14_SIC_937_SIC2.sorted.bam O=P12-14_SIC_937_SIC2.markedsorted.bam M=P12-14_SIC_937_SIC2.metrics
+```
 
-# identify reads involving a primary or supplementary alignment to the virus sequence ("NC_001436.1")
+#### identify reads involving a primary or supplementary alignment to the virus sequence (`NC_001436.1`)
+
+```
 export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
 
 for SAMPLE in "${SAMPLES[@]}"; do
@@ -99,8 +91,10 @@ for SAMPLE in "${SAMPLES[@]}"; do
     wc -l readlists/${SAMPLE}_virus_hit_read_ids.txt
     echo -e "\n"
 done
+```
 
-# Use the viral read list to produce filtered BAM files with only those reads
+
+#### Use the viral read list to produce filtered BAM files with only those reads
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing viral read list filtered BAM for $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
@@ -113,15 +107,17 @@ for SAMPLE in "${SAMPLES[@]}"; do
     cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam
 done
 
-#NOTE: It is possible that the above approach of limited to reads with a viral alignment would be too strict.  
-# A read may correspond to an integration event, have the characteristic LTR sequence, but not produce an alignment to the virus genome 
-# We should try the analysis, with and without this requirement and gauge impact
+**NOTE**: It is possible that the above approach of limited to reads with a viral alignment could be too strict.  
+A read may correspond to an integration event, have the characteristic LTR sequence, but not produce an alignment to the virus genome 
+We should try the analysis, with and without this requirement and gauge impact
 
-# use bedtools (v2.25.0) to create bed representations of the BAM alignments to facilitate integration site counting
-# at the same time apply filters to: require alignment, remove duplicates, limit to reads with characteristic integration site sequences, prevent counting on the virus seq itself
-# do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
+Use bedtools (v2.25.0) to create bed representations of the BAM alignments to facilitate integration site counting
+at the same time apply filters to: require alignment, remove duplicates, limit to reads with characteristic integration site sequences, prevent counting on the virus seq itself
+do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
 
-# (1) with the marked-duplicate BAM
+##### (1) with the marked-duplicate BAM
+
+```
 rm -f tmp/*
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing integration site counts $SAMPLE"
@@ -142,8 +138,11 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo "cp beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_filtered_merged.bed.tsv"
     cp beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_filtered_merged.bed.tsv
 done
+```
 
-# (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
+##### (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
+
+```
 rm -f tmp/*
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing integration site counts $SAMPLE"
@@ -164,5 +163,5 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo "cp beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv"
     cp beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
 done
-
+```
 
