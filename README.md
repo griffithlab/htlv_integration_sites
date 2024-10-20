@@ -15,7 +15,7 @@ CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains 
 TTAGTACACA / AATCATGTGT
 TGACAATGAC / ACTGTTACTG
 
-```
+```bash
 export FASTQ_NAMES=("Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_" "Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_" "Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_" "Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_")
 export PAIRS=("R1" "R2")
 export SEQS=("TTAGTACACA" "AATCATGTGT" "TGACAATGAC" "ACTGTTACTG")
@@ -68,6 +68,34 @@ java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-10B_SIC_936_SIC2.so
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-14_SIC_937_SIC2.sorted.bam O=P12-14_SIC_937_SIC2.markedsorted.bam M=P12-14_SIC_937_SIC2.metrics
 ```
 
+#### produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TTTAGTACACA|TGTGTACTAAA) identified above
+
+
+```
+export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
+rm -f tmp/*
+
+for SAMPLE in "${SAMPLES[@]}"; do
+    echo -e "\nProducing integration site read list filtered BAM for $SAMPLE"
+    echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
+    samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header
+
+    echo "samtools view bams/${SAMPLE}.markedsorted.bam | grep -F -f readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.sam"
+    samtools view bams/${SAMPLE}.markedsorted.bam | grep -F -f readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.sam
+
+    echo "cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam"
+    cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam
+
+    echo "samtools sort tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam -o bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam"
+    samtools sort tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam -o bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam
+
+    echo "samtools index bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam"
+    samtools index bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam
+done
+
+```
+
+
 #### identify reads involving a primary or supplementary alignment to the virus sequence (`NC_001436.1`)
 
 ```
@@ -94,7 +122,7 @@ done
 ```
 
 
-#### Use the viral read list to produce filtered BAM files with only those reads
+#### Use the viral alignment read list to produce filtered BAM files with only those reads
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing viral read list filtered BAM for $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
