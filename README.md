@@ -198,3 +198,16 @@ for SAMPLE in "${SAMPLES[@]}"; do
 done
 ```
 
+#### Create single file with all counts for all samples to facilitate creation of visualizations
+
+```bash
+rm -f tmp/*
+for SAMPLE in "${SAMPLES[@]}"; do
+    awk -v sample="$SAMPLE" '{print $0 "\t" sample}' counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
+done
+echo -e "chromosome\tstart_pos\tend_pos\tcount\tsample" > tmp/header.tsv
+cat tmp/header.tsv tmp/*markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > counts/v2/ALL.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
+```
+
+
+
