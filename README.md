@@ -34,7 +34,7 @@ Based on this analysis it seems that for these data in the RAW read sequences we
 
 #### Create unique read lists of these read identities and store them for later use
 
-```
+```bash
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 only)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2"_"$3"_"$4"_"$5}')
@@ -50,7 +50,7 @@ HTLV-1 reference obtained from: `https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/00
 
 GRCh38 and HTLV-1 references catted together and BWA index and alignment done with BWA version 0.7.17-r1198-dirty
 
-```
+```bash
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_R1_001.fastq.gz Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_R2_001.fastq.gz | samtools view -o CTCF-7_SIC_934_SIC2.bam -Shb /dev/stdin
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_R1_001.fastq.gz Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_R2_001.fastq.gz | samtools view -o CTCF-8_SIC_935_SIC2.bam -Shb /dev/stdin
 /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_R1_001.fastq.gz Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_R2_001.fastq.gz | samtools view -o P12-10B_SIC_936_SIC2.bam -Shb /dev/stdin
@@ -61,7 +61,7 @@ GRCh38 and HTLV-1 references catted together and BWA index and alignment done wi
 alignments converted to bam, sorted, and indexed with samtools version 1.11
 duplicates marked with picard version 2.22.8
 
-```
+```bash
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-7_SIC_934_SIC2.sorted.bam O=CTCF-7_SIC_934_SIC2.markedsorted.bam M=CTCF-7_SIC_934_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-8_SIC_935_SIC2.sorted.bam O=CTCF-8_SIC_935_SIC2.markedsorted.bam M=CTCF-8_SIC_935_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-10B_SIC_936_SIC2.sorted.bam O=P12-10B_SIC_936_SIC2.markedsorted.bam M=P12-10B_SIC_936_SIC2.metrics
@@ -70,8 +70,7 @@ java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-14_SIC_937_SIC2.sor
 
 #### produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TTTAGTACACA|TGTGTACTAAA) identified above
 
-
-```
+```bash
 export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
 rm -f tmp/*
 
@@ -95,10 +94,9 @@ done
 
 ```
 
-
 #### identify reads involving a primary or supplementary alignment to the virus sequence (`NC_001436.1`)
 
-```
+```bash
 export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
 
 for SAMPLE in "${SAMPLES[@]}"; do
@@ -123,6 +121,8 @@ done
 
 
 #### Use the viral alignment read list to produce filtered BAM files with only those reads
+
+```bash
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing viral read list filtered BAM for $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
@@ -134,6 +134,7 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo "cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam"
     cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam
 done
+```
 
 **NOTE**: It is possible that the above approach of limited to reads with a viral alignment could be too strict.  
 A read may correspond to an integration event, have the characteristic LTR sequence, but not produce an alignment to the virus genome 
@@ -145,7 +146,7 @@ do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created fr
 
 ##### (1) with the marked-duplicate BAM
 
-```
+```bash
 rm -f tmp/*
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing integration site counts $SAMPLE"
@@ -170,7 +171,7 @@ done
 
 ##### (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
 
-```
+```bash
 rm -f tmp/*
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing integration site counts $SAMPLE"
