@@ -66,9 +66,12 @@ java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-7_SIC_934_SIC2.sor
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-8_SIC_935_SIC2.sorted.bam O=CTCF-8_SIC_935_SIC2.markedsorted.bam M=CTCF-8_SIC_935_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-10B_SIC_936_SIC2.sorted.bam O=P12-10B_SIC_936_SIC2.markedsorted.bam M=P12-10B_SIC_936_SIC2.metrics
 java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-14_SIC_937_SIC2.sorted.bam O=P12-14_SIC_937_SIC2.markedsorted.bam M=P12-14_SIC_937_SIC2.metrics
+
 ```
 
-#### produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TTTAGTACACA|TGTGTACTAAA) identified above
+#### LTR integration site read filtering of BAM
+
+Produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TTTAGTACACA|TGTGTACTAAA) identified above
 
 ```bash
 export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
@@ -102,13 +105,13 @@ export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProcessing sample: $SAMPLE"
     echo "Obtaining reads with supplemetary alignments to the virus"
-    echo "samtools view -f 2048 bams/${SAMPLE}.markedsorted.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_supplementary_virus_hit_read_ids.txt"
-    samtools view -f 2048 bams/${SAMPLE}.markedsorted.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_supplementary_virus_hit_read_ids.txt
+    echo "samtools view -f 2048 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_supplementary_virus_hit_read_ids.txt"
+    samtools view -f 2048 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_supplementary_virus_hit_read_ids.txt
     wc -l readlists/${SAMPLE}_supplementary_virus_hit_read_ids.txt
 
     echo -e "\nObtaining reads with primary alignments to the virus"
-    echo "samtools view -F 256 bams/${SAMPLE}.markedsorted.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_primary_virus_hit_read_ids.txt"
-    samtools view -F 256 bams/${SAMPLE}.markedsorted.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_primary_virus_hit_read_ids.txt
+    echo "samtools view -F 256 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_primary_virus_hit_read_ids.txt"
+    samtools view -F 256 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_primary_virus_hit_read_ids.txt
     wc -l readlists/${SAMPLE}_primary_virus_hit_read_ids.txt
 
     echo -e "\nCreating a unique list of reads with either supplementary or primary alignments to the virus"
@@ -120,29 +123,30 @@ done
 ```
 
 
-#### Use the viral alignment read list to produce filtered BAM files with only those reads
+#### Use the viral alignment read list to produce filtered BAM files with only those reads that have such alignments
 
 ```bash
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing viral read list filtered BAM for $SAMPLE"
-    echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
-    samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header
+    echo "samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header"
+    samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header
 
-    echo "samtools view bams/${SAMPLE}.markedsorted.bam | grep -F -f readlists/${SAMPLE}_virus_hit_read_ids.txt > tmp/${SAMPLE}.markedsorted.viralreads.sam"
-    samtools view bams/${SAMPLE}.markedsorted.bam | grep -F -f readlists/${SAMPLE}_virus_hit_read_ids.txt > tmp/${SAMPLE}.markedsorted.viralreads.sam
+    echo "samtools view bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam | grep -F -f readlists/${SAMPLE}_virus_hit_read_ids.txt > tmp/${SAMPLE}.markedsorted.viralreads.sam"
+    samtools view bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam | grep -F -f readlists/${SAMPLE}_virus_hit_read_ids.txt > tmp/${SAMPLE}.markedsorted.viralreads.sam
 
-    echo "cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam"
-    cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam
+    echo "cat tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam"
+    cat tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam
 done
 ```
 
-**NOTE**: It is possible that the above approach of limited to reads with a viral alignment could be too strict.  
+**NOTE**: It is possible that the above approach of limited to reads with a viral alignment could be too strict.
 A read may correspond to an integration event, have the characteristic LTR sequence, but not produce an alignment to the virus genome 
 We should try the analysis, with and without this requirement and gauge impact
 
-Use bedtools (v2.25.0) to create bed representations of the BAM alignments to facilitate integration site counting
-at the same time apply filters to: require alignment, remove duplicates, limit to reads with characteristic integration site sequences, prevent counting on the virus seq itself
-do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
+Use bedtools (v2.25.0) to create bed representations of the BAM alignments to facilitate integration site counting.
+At the same time apply filters to: require alignment, remove duplicates, prevent counting on the virus seq itself
+
+Do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
 
 ##### (1) with the marked-duplicate BAM
 
@@ -150,12 +154,12 @@ do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created fr
 rm -f tmp/*
 for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing integration site counts $SAMPLE"
-    echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
-    samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header
-    echo "samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted.bam | grep -P 'TTTAGTACACA|TGTGTACTAAA' > tmp/${SAMPLE}.markedsorted_filtered.sam"
-    samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted.bam | grep -P 'TTTAGTACACA|TGTGTACTAAA' > tmp/${SAMPLE}.markedsorted_filtered.sam
-    echo "cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted_filtered.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_filtered.bam"
-    cat tmp/${SAMPLE}.markedsorted.bam.header tmp/${SAMPLE}.markedsorted_filtered.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_filtered.bam
+    echo "samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header"
+    samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header
+    echo "samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_filtered.sam"
+    samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_filtered.sam
+    echo "cat tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header tmp/${SAMPLE}.markedsorted_filtered.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_filtered.bam"
+    cat tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header tmp/${SAMPLE}.markedsorted_filtered.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_filtered.bam
     echo "samtools sort tmp/${SAMPLE}.markedsorted_filtered.bam -o bams/${SAMPLE}.markedsorted_filtered.bam"
     samtools sort tmp/${SAMPLE}.markedsorted_filtered.bam -o bams/${SAMPLE}.markedsorted_filtered.bam
     echo "samtools index bams/${SAMPLE}.markedsorted_filtered.bam"
@@ -177,8 +181,8 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo -e "\nProducing integration site counts $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam > tmp/${SAMPLE}.markedsorted_with_hits_to_viral.bam.header"
     samtools view -H bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam > tmp/${SAMPLE}.markedsorted_with_hits_to_viral.bam.header
-    echo "samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam | grep -P 'TTTAGTACACA|TGTGTACTAAA' > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.sam"
-    samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam | grep -P 'TTTAGTACACA|TGTGTACTAAA' > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.sam
+    echo "samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.sam"
+    samtools view -f 1 -F 1024 -q 20 bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.sam
     echo "cat tmp/${SAMPLE}.markedsorted_with_hits_to_viral.bam.header tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam"
     cat tmp/${SAMPLE}.markedsorted_with_hits_to_viral.bam.header tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.sam | samtools view -Sb - > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam
     echo "samtools sort tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam -o bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam"
