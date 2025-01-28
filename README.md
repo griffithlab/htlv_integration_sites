@@ -11,19 +11,32 @@ Genomic DNA was isolated from humanized mouse spleen that was infected with HTLV
 
 CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains – p12 and CTCF.  Analysis focused on human cell DNA. Samples were obtained from spleen. The goal here is to identify the viral integration sites and quantify them to assess clonality. Using Gini index value. 
 
+#### Set ENVs
+
+If needed update the following in `envs.txt` so they can be sourced when needed
+```bash
+export WORKING_DIR=/storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites
+
+export FASTQ_NAMES=("Ratner_CTCF-1_SIC_934_196_CGTATCTCAA_AATACTAATA_S156_" "Ratner_CTCF-3_SIC_935_196_GTCCTGCCGA_AATACTAATA_S157_" "Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_" "Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_" "Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_" "Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_" "Ratner_P12-5_SIC_936_196_CCGGGACACA_AATACTAATA_S158_" "Ratner_P12-8_SIC_937_196_GGCTGGGATA_AATACTAATA_S159_")
+
+export PAIRS=("R1" "R2")
+
+export SEQS=("TTAGTACACA" "AATCATGTGT" "TGACAATGAC" "ACTGTTACTG")
+```
+
 #### Download the data
 
 ```bash
-sh /storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites/git/htlv_integration_sites/scripts/download_raw_data.sh
+sh $WORKING_DIR/git/htlv_integration_sites/scripts/download_raw_data.sh
 
 ```
  
 #### Get the file base names:
 
 ```bash
-cd /storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites/fastqs
-ls -1 | perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "$1\n"}' | sort | uniq -c 
-ls -1 | perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "$1\n"}' | sort | uniq 
+cd $WORKING_DIR
+ls -1 fastqs/* | perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "$1_\n"}' | sort | uniq -c 
+ls -1 fastqs/*| perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "$1_\n"}' | sort | uniq 
 
 ```
 
@@ -32,10 +45,8 @@ TTAGTACACA / AATCATGTGT
 TGACAATGAC / ACTGTTACTG
 
 ```bash
-export FASTQ_NAMES=("Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_" "Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_" "Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_" "Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_")
-export PAIRS=("R1" "R2")
-export SEQS=("TTAGTACACA" "AATCATGTGT" "TGACAATGAC" "ACTGTTACTG")
 
+cd $WORKING_DIR
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
   for PAIR in "${PAIRS[@]}"; do
     for SEQ in "${SEQS[@]}"; do
@@ -51,9 +62,10 @@ Based on this analysis it seems that for these data in the RAW read sequences we
 #### Create unique read lists of these read identities and store them for later use
 
 ```bash
+cd $WORKING_DIR
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 only)"
-    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2"_"$3"_"$4"_"$5}')
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
     zcat fastqs/${FASTQ_NAME}R1_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TTTAGTACACA' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
 done
@@ -64,24 +76,67 @@ done
 GRCh38 reference copied from: `/storage1/fs1/bga/Active/gmsroot/gc2560/core/GRC-human-build38_human_95_38_U2AF1_fix/all_sequences.fa`
 HTLV-1 reference obtained from: `https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/863/585/GCF_000863585.1_ViralProj15434/GCF_000863585.1_ViralProj15434_genomic.fna.gz`
 
-GRCh38 and HTLV-1 references catted together and BWA index and alignment done with BWA version 0.7.17-r1198-dirty
+GRCh38 and HTLV-1 references catted together and BWA index and alignment done with BWA version 0.7.17-r1198-dirty (bryanfisk/bwa:latest)
+
+##### New approach
 
 ```bash
-/usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_R1_001.fastq.gz Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_R2_001.fastq.gz | samtools view -o CTCF-7_SIC_934_SIC2.bam -Shb /dev/stdin
-/usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_R1_001.fastq.gz Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_R2_001.fastq.gz | samtools view -o CTCF-8_SIC_935_SIC2.bam -Shb /dev/stdin
-/usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_R1_001.fastq.gz Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_R2_001.fastq.gz | samtools view -o P12-10B_SIC_936_SIC2.bam -Shb /dev/stdin
-/usr/local/bwa/bwa mem -K 20000000 -t 8 -Y GRCh38+HTLV-1.fa Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_R1_001.fastq.gz Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_R2_001.fastq.gz | samtools view -o P12-14_SIC_937_SIC2.bam -Shb /dev/stdin
+isub -i 'bryanfisk/bwa:latest' -m 32 -n 8
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+cd $WORKING_DIR
+
+echo "${FASTQ_NAMES[@]}"
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
+    echo "Will name output using sample name: $SAMPLE"
+    /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y $WORKING_DIR/references/GRCh38+HTLV-1.fa $WORKING_DIR/fastqs/${FASTQ_NAME}R1_001.fastq.gz $WORKING_DIR/fastqs/${FASTQ_NAME}R2_001.fastq.gz | samtools view -o $WORKING_DIR/bams/${SAMPLE}.bam -Shb /dev/stdin
+done
+
+exit
 ```
 
-#### Duplicate marking step
-alignments converted to bam, sorted, and indexed with samtools version 1.11
-duplicates marked with picard version 2.22.8
+#### Sorting and index BAMs
+Alignments converted to bam, sorted, and indexed with samtools version 1.11
 
 ```bash
-java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-7_SIC_934_SIC2.sorted.bam O=CTCF-7_SIC_934_SIC2.markedsorted.bam M=CTCF-7_SIC_934_SIC2.metrics
-java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=CTCF-8_SIC_935_SIC2.sorted.bam O=CTCF-8_SIC_935_SIC2.markedsorted.bam M=CTCF-8_SIC_935_SIC2.metrics
-java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-10B_SIC_936_SIC2.sorted.bam O=P12-10B_SIC_936_SIC2.markedsorted.bam M=P12-10B_SIC_936_SIC2.metrics
-java -Xmx16g -jar /usr/local/picard.jar MarkDuplicates I=P12-14_SIC_937_SIC2.sorted.bam O=P12-14_SIC_937_SIC2.markedsorted.bam M=P12-14_SIC_937_SIC2.metrics
+isub -i 'bryanfisk/bwa:latest' -m 32 -n 2
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+cd $WORKING_DIR
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
+    echo "Will name output using sample name: $SAMPLE"
+    samtools sort -o $WORKING_DIR/bams/${SAMPLE}.sorted.bam -O BAM $WORKING_DIR/bams/${SAMPLE}.bam
+    samtools index $WORKING_DIR/bams/${SAMPLE}.sorted.bam
+done
+
+exit
+```
+
+
+#### Duplicate marking step
+Duplicates marked with picard version 2.22.8
+
+```bash
+cd $WORKING_DIR/tools
+wget https://github.com/broadinstitute/picard/releases/download/2.22.8/picard.jar
+
+isub -i 'bryanfisk/bwa:latest' -m 32 -n 2
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+cd $WORKING_DIR
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
+    echo "Will name output using sample name: $SAMPLE"
+    java -Xmx16g -jar $WORKING_DIR/tools/picard.jar MarkDuplicates I=$WORKING_DIR/bams/${SAMPLE}.sorted.bam O=$WORKING_DIR/bams/${SAMPLE}.markedsorted.bam M=$WORKING_DIR/bams/${SAMPLE}.metrics
+    samtools index $WORKING_DIR/bams/${SAMPLE}.markedsorted.bam
+done
+
+exit
 
 ```
 
