@@ -14,3 +14,4 @@ wget https://dsildata.htcf.wustl.edu/Ratner-82411703/1173-393/Ratner_P12-14_SIC_
 wget https://dsildata.htcf.wustl.edu/Ratner-82411703/1173-393/Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_I2_001.fastq.gz
 wget https://dsildata.htcf.wustl.edu/Ratner-82411703/1173-393/Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_R1_001.fastq.gz
 wget https://dsildata.htcf.wustl.edu/Ratner-82411703/1173-393/Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_R2_001.fastq.gz
+
