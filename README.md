@@ -10,6 +10,14 @@ Brief answers:
 Genomic DNA was isolated from humanized mouse spleen that was infected with HTLV-1 p12(wt control) or CTCF mutant virus. p12-10B, p12-14 and CTCF-7, CTCF-8 are mouse ID numbers. We want to quantify the viral integration sites in infected human T cells to assess clonality. I expect to see many unique integration sites but don’t know what kinds of clonality that would be observed.
 
 CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains – p12 and CTCF.  Analysis focused on human cell DNA. Samples were obtained from spleen. The goal here is to identify the viral integration sites and quantify them to assess clonality. Using Gini index value. 
+
+#### Download the data
+
+```bash
+sh /storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites/git/htlv_integration_sites/scripts/download_raw_data.sh
+
+```
+
  
 #### Investigate the four supplies possible integration characteristic sequences:
 TTAGTACACA / AATCATGTGT
