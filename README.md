@@ -17,8 +17,16 @@ CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains 
 sh /storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites/git/htlv_integration_sites/scripts/download_raw_data.sh
 
 ```
-
  
+#### Get the file base names:
+
+```bash
+cd /storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites/fastqs
+ls -1 | perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "$1\n"}' | sort | uniq -c 
+ls -1 | perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "$1\n"}' | sort | uniq 
+
+```
+
 #### Investigate the four supplies possible integration characteristic sequences:
 TTAGTACACA / AATCATGTGT
 TGACAATGAC / ACTGTTACTG
