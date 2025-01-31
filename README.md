@@ -132,13 +132,30 @@ cd $WORKING_DIR
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
-    java -Xmx16g -jar $WORKING_DIR/tools/picard.jar MarkDuplicates I=$WORKING_DIR/bams/${SAMPLE}.sorted.bam O=$WORKING_DIR/bams/${SAMPLE}.markedsorted.bam M=$WORKING_DIR/bams/${SAMPLE}.metrics
+    java -Xmx16g -jar $WORKING_DIR/tools/picard.jar MarkDuplicates I=$WORKING_DIR/bams/${SAMPLE}.sorted.bam O=$WORKING_DIR/bams/${SAMPLE}.markedsorted.bam M=$WORKING_DIR/metrics_files/${SAMPLE}.markdup.metrics
     samtools index $WORKING_DIR/bams/${SAMPLE}.markedsorted.bam
 done
 
 exit
-
 ```
+
+#### Flagstat step
+Run samtools flagstats on dup marked BAMs
+
+```bash
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+cd $WORKING_DIR
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
+    echo "Will name output using sample name: $SAMPLE"
+    samtools flagstat $WORKING_DIR/bams/${SAMPLE}.markedsorted.bam > $WORKING_DIR/metrics_files/${SAMPLE}.flagstat.metrics
+done
+
+exit
+```
+
 
 #### LTR integration site read filtering of BAM
 
