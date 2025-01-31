@@ -11,6 +11,11 @@ Genomic DNA was isolated from humanized mouse spleen that was infected with HTLV
 
 CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains – p12 and CTCF.  Analysis focused on human cell DNA. Samples were obtained from spleen. The goal here is to identify the viral integration sites and quantify them to assess clonality. Using Gini index value. 
 
+#### Samples in each batch
+
+- Batch 1: CTCF-7, CTCF-8, P12-10B,P12-14
+- Batch 2: CTCF-1, CTCF-3, P12-5, P12-8
+
 #### Set ENVs
 
 If needed update the following in `envs.txt` so they can be sourced when needed
@@ -78,8 +83,6 @@ HTLV-1 reference obtained from: `https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/00
 
 GRCh38 and HTLV-1 references catted together and BWA index and alignment done with BWA version 0.7.17-r1198-dirty (bryanfisk/bwa:latest)
 
-##### New approach
-
 ```bash
 isub -i 'bryanfisk/bwa:latest' -m 32 -n 8
 source $WORKING_DIR/git/htlv_integration_sites/envs.txt
@@ -106,7 +109,6 @@ source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 cd $WORKING_DIR
 
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
-    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
     samtools sort -o $WORKING_DIR/bams/${SAMPLE}.sorted.bam -O BAM $WORKING_DIR/bams/${SAMPLE}.bam
@@ -115,7 +117,6 @@ done
 
 exit
 ```
-
 
 #### Duplicate marking step
 Duplicates marked with picard version 2.22.8
@@ -129,7 +130,6 @@ source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 cd $WORKING_DIR
 
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
-    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
     java -Xmx16g -jar $WORKING_DIR/tools/picard.jar MarkDuplicates I=$WORKING_DIR/bams/${SAMPLE}.sorted.bam O=$WORKING_DIR/bams/${SAMPLE}.markedsorted.bam M=$WORKING_DIR/bams/${SAMPLE}.metrics
@@ -145,10 +145,16 @@ exit
 Produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TTTAGTACACA|TGTGTACTAAA) identified above
 
 ```bash
-export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
+
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+
+cd $WORKING_DIR
 rm -f tmp/*
 
-for SAMPLE in "${SAMPLES[@]}"; do
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
+
     echo -e "\nProducing integration site read list filtered BAM for $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header"
     samtools view -H bams/${SAMPLE}.markedsorted.bam > tmp/${SAMPLE}.markedsorted.bam.header
@@ -171,9 +177,14 @@ done
 #### identify reads involving a primary or supplementary alignment to the virus sequence (`NC_001436.1`)
 
 ```bash
-export SAMPLES=("CTCF-7_SIC_934_SIC2" "CTCF-8_SIC_935_SIC2" "P12-10B_SIC_936_SIC2" "P12-14_SIC_937_SIC2")
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 
-for SAMPLE in "${SAMPLES[@]}"; do
+cd $WORKING_DIR
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
+
     echo -e "\nProcessing sample: $SAMPLE"
     echo "Obtaining reads with supplemetary alignments to the virus"
     echo "samtools view -f 2048 bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam 'NC_001436.1' | cut -f 1 | sort | uniq > readlists/${SAMPLE}_supplementary_virus_hit_read_ids.txt"
@@ -191,13 +202,20 @@ for SAMPLE in "${SAMPLES[@]}"; do
     wc -l readlists/${SAMPLE}_virus_hit_read_ids.txt
     echo -e "\n"
 done
+exit
 ```
 
 
 #### Use the viral alignment read list to produce filtered BAM files with only those reads that have such alignments
 
 ```bash
-for SAMPLE in "${SAMPLES[@]}"; do
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+
+cd $WORKING_DIR
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo -e "\nProducing viral read list filtered BAM for $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header"
     samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header
@@ -208,6 +226,8 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo "cat tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam"
     cat tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header tmp/${SAMPLE}.markedsorted.viralreads.sam | samtools view -Sb - > bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam
 done
+
+exit
 ```
 
 **NOTE**: It is possible that the above approach of limited to reads with a viral alignment could be too strict.
@@ -222,8 +242,14 @@ Do this two ways: (1) with the marked-duplicate BAM, (2) with the BAM created fr
 ##### (1) with the marked-duplicate BAM
 
 ```bash
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+
+cd $WORKING_DIR
+
 rm -f tmp/*
-for SAMPLE in "${SAMPLES[@]}"; do
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo -e "\nProducing integration site counts $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header"
     samtools view -H bams/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam > tmp/${SAMPLE}.markedsorted_ltr_integration_seq_reads.bam.header
@@ -242,13 +268,22 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo "cp beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_filtered_merged.bed.tsv"
     cp beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_filtered_merged.bed.tsv
 done
+
+exit
 ```
 
 ##### (2) with the BAM created from marked-duplicate BAM that also limits to viral hit reads produced above
 
 ```bash
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+
+cd $WORKING_DIR
+
 rm -f tmp/*
-for SAMPLE in "${SAMPLES[@]}"; do
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo -e "\nProducing integration site counts $SAMPLE"
     echo "samtools view -H bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam > tmp/${SAMPLE}.markedsorted_with_hits_to_viral.bam.header"
     samtools view -H bams/${SAMPLE}.markedsorted_with_hits_to_viral.bam > tmp/${SAMPLE}.markedsorted_with_hits_to_viral.bam.header
@@ -267,6 +302,8 @@ for SAMPLE in "${SAMPLES[@]}"; do
     echo "cp beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv"
     cp beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
 done
+
+exit
 ```
 
 #### Create single file with all counts for all samples to facilitate creation of visualizations
