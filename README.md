@@ -261,12 +261,12 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     samtools sort tmp/${SAMPLE}.markedsorted_filtered.bam -o bams/${SAMPLE}.markedsorted_filtered.bam
     echo "samtools index bams/${SAMPLE}.markedsorted_filtered.bam"
     samtools index bams/${SAMPLE}.markedsorted_filtered.bam
-    echo "bedtools bamtobed -i bams/${SAMPLE}.markedsorted_filtered.bam > beds/v2/${SAMPLE}.markedsorted_filtered.bed"
-    bedtools bamtobed -i bams/${SAMPLE}.markedsorted_filtered.bam > beds/v2/${SAMPLE}.markedsorted_filtered.bed
-    echo "bedtools merge -i beds/v2/${SAMPLE}.markedsorted_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed"
-    bedtools merge -i beds/v2/${SAMPLE}.markedsorted_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed
-    echo "cp beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_filtered_merged.bed.tsv"
-    cp beds/v2/${SAMPLE}.markedsorted_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_filtered_merged.bed.tsv
+    echo "bedtools bamtobed -i bams/${SAMPLE}.markedsorted_filtered.bam > beds/${SAMPLE}.markedsorted_filtered.bed"
+    bedtools bamtobed -i bams/${SAMPLE}.markedsorted_filtered.bam > beds/${SAMPLE}.markedsorted_filtered.bed
+    echo "bedtools merge -i beds/${SAMPLE}.markedsorted_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/${SAMPLE}.markedsorted_filtered_merged.bed"
+    bedtools merge -i beds/${SAMPLE}.markedsorted_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/${SAMPLE}.markedsorted_filtered_merged.bed
+    echo "cp beds/${SAMPLE}.markedsorted_filtered_merged.bed counts/${SAMPLE}.markedsorted_filtered_merged.bed.tsv"
+    cp beds/${SAMPLE}.markedsorted_filtered_merged.bed counts/${SAMPLE}.markedsorted_filtered_merged.bed.tsv
 done
 
 exit
@@ -295,12 +295,12 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     samtools sort tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam -o bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam
     echo "samtools index bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam"
     samtools index bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam
-    echo "bedtools bamtobed -i bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam > beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed"
-    bedtools bamtobed -i bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam > beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed
-    echo "bedtools merge -i beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed"
-    bedtools merge -i beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed
-    echo "cp beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv"
-    cp beds/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
+    echo "bedtools bamtobed -i bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam > beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed"
+    bedtools bamtobed -i bams/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bam > beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed
+    echo "bedtools merge -i beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed"
+    bedtools merge -i beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered.bed -c 1 -o count | grep -v 'NC_001436.1' > beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed
+    echo "cp beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv"
+    cp beds/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed counts/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
 done
 
 exit
@@ -311,10 +311,10 @@ exit
 ```bash
 rm -f tmp/*
 for SAMPLE in "${SAMPLES[@]}"; do
-    awk -v sample="$SAMPLE" '{print $0 "\t" sample}' counts/v2/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
+    awk -v sample="$SAMPLE" '{print $0 "\t" sample}' counts/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
 done
 echo -e "chromosome\tstart_pos\tend_pos\tcount\tsample" > tmp/header.tsv
-cat tmp/header.tsv tmp/*markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > counts/v2/ALL.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
+cat tmp/header.tsv tmp/*markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > counts/ALL.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
 ```
 
 
