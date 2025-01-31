@@ -4,6 +4,8 @@ dir()
 
 sites = read.table(file="ALL.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv", header=T, sep="\t")
 
+sample_list = c("CTCF-1", "CTCF-7", "CTCF-8", "P12-10B", "P12-14", "P12-5", "P12-8")
+
 sites$integration_site <- paste(sites$chromosome, sites$start_pos, sep = "_")
 
 library(ggplot2)
@@ -26,7 +28,7 @@ lw = 0.05
 lsize = 2
   
 #CTCF-7 plot
-sites_sample = sites[which(sites$sample=="CTCF-7_SIC_934_SIC2"),]
+sites_sample = sites[which(sites$sample=="CTCF-7"),]
 sample_name = "CTCF-7"
 gini_index = 0.69
 n = 5 
@@ -50,7 +52,7 @@ p1 = ggplot(data=sites_sample, aes(x = "", y = count, fill = integration_site)) 
 print(p1)
 
 #CTCF-8 plot
-sites_sample = sites[which(sites$sample=="CTCF-8_SIC_935_SIC2"),]
+sites_sample = sites[which(sites$sample=="CTCF-8"),]
 sample_name = "CTCF-8"
 gini_index = 0.65
 n = 5 
@@ -74,7 +76,7 @@ p2 = ggplot(data=sites_sample, aes(x = "", y = count, fill = integration_site)) 
 print(p2)
 
 #P12-10B plot
-sites_sample = sites[which(sites$sample=="P12-10B_SIC_936_SIC2"),]
+sites_sample = sites[which(sites$sample=="P12-10B"),]
 sample_name = "P12-10B"
 gini_index = 0.50
 n = 1 
@@ -98,7 +100,7 @@ p3 = ggplot(data=sites_sample, aes(x = "", y = count, fill = integration_site)) 
 print(p3)
 
 #P12-14 plot
-sites_sample = sites[which(sites$sample=="P12-14_SIC_937_SIC2"),]
+sites_sample = sites[which(sites$sample=="P12-14"),]
 sample_name = "P12-14"
 gini_index = 0.90
 n = 3 
