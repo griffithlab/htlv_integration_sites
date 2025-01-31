@@ -1,6 +1,6 @@
 ### Example of an HTLV-1 integration site analysis
 
-Short hand sample names: “CTCF-7, CTCF-8, P12-10B, P12-14"
+Short hand sample names: CTCF-1, CTCF-7, CTCF-8, P12-10B, P12-14, P12-5, P12-8
 
 #### High level questions
 
