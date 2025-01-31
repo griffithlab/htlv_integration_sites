@@ -309,12 +309,21 @@ exit
 #### Create single file with all counts for all samples to facilitate creation of visualizations
 
 ```bash
+isub -m 32
+source $WORKING_DIR/git/htlv_integration_sites/envs.txt
+
+cd $WORKING_DIR
+
 rm -f tmp/*
-for SAMPLE in "${SAMPLES[@]}"; do
+
+for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+    SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     awk -v sample="$SAMPLE" '{print $0 "\t" sample}' counts/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > tmp/${SAMPLE}.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
 done
 echo -e "chromosome\tstart_pos\tend_pos\tcount\tsample" > tmp/header.tsv
 cat tmp/header.tsv tmp/*markedsorted_with_hits_to_viral_filtered_merged.bed.tsv > counts/ALL.markedsorted_with_hits_to_viral_filtered_merged.bed.tsv
+
+exit
 ```
 
 
