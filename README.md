@@ -20,9 +20,9 @@ CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains 
 
 If needed update the following in `envs.txt` so they can be sourced when needed
 ```bash
-export WORKING_DIR=/storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/htlv_integration_sites
+export WORKING_DIR=/storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/jurkat_htlv_Apr2025
 
-export FASTQ_NAMES=("Ratner_CTCF-1_SIC_934_196_CGTATCTCAA_AATACTAATA_S156_" "Ratner_CTCF-3_SIC_935_196_GTCCTGCCGA_AATACTAATA_S157_" "Ratner_CTCF-7_SIC_934_SIC2_Ratner_196_CGTATCTCA_AATACTAATA_S2_" "Ratner_CTCF-8_SIC_935_SIC2_Ratner_196_GTCCTGCCG_AATACTAATA_S3_" "Ratner_P12-10B_SIC_936_SIC2_Ratner_196_CCGGGACAC_AATACTAATA_S4_" "Ratner_P12-14_SIC_937_SIC2_Ratner_196_GGCTGGGAT_AATACTAATA_S5_" "Ratner_P12-5_SIC_936_196_CCGGGACACA_AATACTAATA_S158_" "Ratner_P12-8_SIC_937_196_GGCTGGGATA_AATACTAATA_S159_")
+export FASTQ_NAMES=("Ratner_40_SIC_935_196_GTCCTGCCGA_AATACTAATA_S13_" "Ratner_40w_SIC_936_196_CCGGGACACA_AATACTAATA_S14_" "Ratner_43_SIC_937_196_GGCTGGGATA_AATACTAATA_S15_" "Ratner_6_SIC_934_196_CGTATCTCAA_AATACTAATA_S12_" "Ratner_Gs-Index1_196_AATACTAATA_S11_")
 
 export PAIRS=("R1" "R2")
 
@@ -45,7 +45,7 @@ ls -1 fastqs/*| perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "
 
 ```
 
-#### Investigate the four supplies possible integration characteristic sequences:
+#### Investigate the four supplied possible integration characteristic sequences:
 TTAGTACACA / AATCATGTGT
 TGACAATGAC / ACTGTTACTG
 
@@ -62,7 +62,18 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
 done
 ```
 
-Based on this analysis it seems that for these data in the RAW read sequences we only really see the "TTAGTACACA" sequence and only in Read 1 files
+Based on this analysis it seems that for these data in the RAW read sequences we only really see the "TGACAATGAC" sequence and only in Read 2 files
+
+####
+Summarize the total read counts for each fastq file
+
+```bash
+cd $WORKING_DIR
+for f in fastqs/*.fastq.gz; do
+    echo -n "$f: "
+    zcat "$f" | wc -l | awk '{print $1/4}'
+done
+```
 
 #### Create unique read lists of these read identities and store them for later use
 
