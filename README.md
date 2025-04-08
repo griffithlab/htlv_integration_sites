@@ -108,7 +108,7 @@ done
 exit
 ```
 
-#### Sorting and index BAMs
+#### Sort and index BAMs
 Alignments converted to bam, sorted, and indexed with samtools version 1.11
 
 ```bash
@@ -130,6 +130,7 @@ exit
 Duplicates marked with picard version 2.22.8
 
 ```bash
+mkdir $WORKING_DIR/tools
 cd $WORKING_DIR/tools
 wget https://github.com/broadinstitute/picard/releases/download/2.22.8/picard.jar
 
