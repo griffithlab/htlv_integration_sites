@@ -1,24 +1,19 @@
 ### Example of an HTLV-1 integration site analysis
 
-Short hand sample names: CTCF-1, CTCF-7, CTCF-8, P12-10B, P12-14, P12-5, P12-8
+Short hand sample names: "40", "40w", "43", "6", "Gs"
 
 #### High level questions
 
-What are the experimental details here?  Humanized mice (humanized how?) are infected with different strains of HTLV-1?  Four different strains here?  And we are looking for genome integrations in mice cells? or human cells?   How were the cells obtained for genomic DNA isolation (is this just from blood?).  The goal here is to identify the viral integration sites and quantify them to assess clonality?  Is there an expectation for degree of clonality we might observe.  Are we expecting to see many different unique integration sites in each sample?
-
-Brief answers:
-Genomic DNA was isolated from humanized mouse spleen that was infected with HTLV-1 p12(wt control) or CTCF mutant virus. p12-10B, p12-14 and CTCF-7, CTCF-8 are mouse ID numbers. We want to quantify the viral integration sites in infected human T cells to assess clonality. I expect to see many unique integration sites but don’t know what kinds of clonality that would be observed.
-
-CD34+ cells were injected in liver at 1d of life. Infected with HTLV. 2 strains – p12 and CTCF.  Analysis focused on human cell DNA. Samples were obtained from spleen. The goal here is to identify the viral integration sites and quantify them to assess clonality. Using Gini index value. 
+Get integration site identities and counts for each data set
 
 #### Samples in each batch
 
-- Batch 1: CTCF-7, CTCF-8, P12-10B,P12-14
-- Batch 2: CTCF-1, CTCF-3, P12-5, P12-8
+- Aprt 2025 Batch: "40", "40w", "43", "6", "Gs"
 
 #### Set ENVs
 
 If needed update the following in `envs.txt` so they can be sourced when needed
+
 ```bash
 export WORKING_DIR=/storage1/fs1/mgriffit/Active/griffithlab/adhoc/ratner_p01/jurkat_htlv_Apr2025
 
