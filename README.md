@@ -169,7 +169,7 @@ exit
 
 #### LTR integration site read filtering of BAM
 
-Produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TTTAGTACACA|TGTGTACTAAA) identified above
+Produce a version of the duplicate marked BAM that is limited to only those alignments involving reads that contained the characterstic integration site sequence (TGACAATGAC) identified above
 
 ```bash
 
@@ -177,6 +177,7 @@ isub -m 32
 source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 
 cd $WORKING_DIR
+mkdir tmp
 rm -f tmp/*
 
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
