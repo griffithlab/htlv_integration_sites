@@ -275,6 +275,7 @@ source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 
 cd $WORKING_DIR
 mkdir beds
+mkdir counts
 
 rm -f tmp/*
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
