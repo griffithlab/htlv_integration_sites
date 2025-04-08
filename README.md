@@ -78,7 +78,7 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 only)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
-    zcat fastqs/${FASTQ_NAME}R1_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TTTAGTACACA' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
+    zcat fastqs/${FASTQ_NAME}R1_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TGACAATGAC' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
 done
 ```
 
