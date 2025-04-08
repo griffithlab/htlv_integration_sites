@@ -1,6 +1,6 @@
 ### Example of an HTLV-1 integration site analysis
 
-Short hand sample names: "40", "40w", "43", "6", "Gs"
+Short hand sample names: "40", "40w", "43", "6", "Gs-Index1"
 
 #### High level questions
 
@@ -8,7 +8,7 @@ Get integration site identities and counts for each data set
 
 #### Samples in each batch
 
-- Aprt 2025 Batch: "40", "40w", "43", "6", "Gs"
+- Apr 2025 Batch: "40", "40w", "43", "6", "Gs-Index1"
 
 #### Set ENVs
 
@@ -74,11 +74,12 @@ done
 
 ```bash
 cd $WORKING_DIR
+mkdir readlists
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
-    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 only)"
+    echo -e "\nProcessing FASTQ: $FASTQ_NAME (R2 only)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
-    zcat fastqs/${FASTQ_NAME}R1_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TGACAATGAC' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
+    zcat fastqs/${FASTQ_NAME}R2_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TGACAATGAC' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
 done
 ```
 
@@ -93,6 +94,7 @@ GRCh38 and HTLV-1 references catted together and BWA index and alignment done wi
 isub -i 'bryanfisk/bwa:latest' -m 32 -n 8
 source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 cd $WORKING_DIR
+mkdir bams
 
 echo "${FASTQ_NAMES[@]}"
 
