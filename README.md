@@ -131,6 +131,7 @@ Duplicates marked with picard version 2.22.8
 
 ```bash
 mkdir $WORKING_DIR/tools
+mkdir $WORKING_DIR/metrics_files
 cd $WORKING_DIR/tools
 wget https://github.com/broadinstitute/picard/releases/download/2.22.8/picard.jar
 
