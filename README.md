@@ -112,7 +112,7 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
-    /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y $WORKING_DIR/references/GRCh38+HTLV-1.fa $WORKING_DIR/fastqs/${FASTQ_NAME}R1_001.fastq.gz $WORKING_DIR/fastqs/${FASTQ_NAME}R2_001.fastq.gz | samtools view -o $WORKING_DIR/bams/${SAMPLE}.bam -Shb /dev/stdin 2>/$WORKING_DIR/logs/${SAMPLE}.alignment.log
+    /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y $WORKING_DIR/references/GRCh38+HTLV-1.fa $WORKING_DIR/fastqs/${FASTQ_NAME}R1_001.fastq.gz $WORKING_DIR/fastqs/${FASTQ_NAME}R2_001.fastq.gz 2>$WORKING_DIR/logs/${SAMPLE}.alignment.stderr | samtools view -o $WORKING_DIR/bams/${SAMPLE}.bam -Shb /dev/stdin 2>$WORKING_DIR/logs/${SAMPLE}.samtools.stderr
 done
 
 exit
