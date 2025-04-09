@@ -1,0 +1,17 @@
+>Seq1
+TTAGTACACA
+>Seq1-rev
+ACACATGATT
+>Seq1-comp
+AATCATGTGT
+>Seq1-rev-comp
+TGTGTACTAA
+>Seq2
+TGACAATGAC
+>Seq2-rev
+CAGTAACAGT
+>Seq2-comp
+ACTGTTACTG
+>Seq2-rev-comp
+GTCATTGTCA
+
