@@ -92,7 +92,7 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
 done
 ```
 
-#### Details of reference sequences and alignments produced
+#### Reference sequences and read alignment
 
 GRCh38 reference copied from: `/storage1/fs1/bga/Active/gmsroot/gc2560/core/GRC-human-build38_human_95_38_U2AF1_fix/all_sequences.fa`
 HTLV-1 reference obtained from: `https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/863/585/GCF_000863585.1_ViralProj15434/GCF_000863585.1_ViralProj15434_genomic.fna.gz`
@@ -104,6 +104,7 @@ isub -i 'bryanfisk/bwa:latest' -m 32 -n 8
 source $WORKING_DIR/git/htlv_integration_sites/envs.txt
 cd $WORKING_DIR
 mkdir bams
+mkdir logs
 
 echo "${FASTQ_NAMES[@]}"
 
@@ -111,7 +112,7 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R1 and R2)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
-    /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y $WORKING_DIR/references/GRCh38+HTLV-1.fa $WORKING_DIR/fastqs/${FASTQ_NAME}R1_001.fastq.gz $WORKING_DIR/fastqs/${FASTQ_NAME}R2_001.fastq.gz | samtools view -o $WORKING_DIR/bams/${SAMPLE}.bam -Shb /dev/stdin
+    /usr/local/bwa/bwa mem -K 20000000 -t 8 -Y $WORKING_DIR/references/GRCh38+HTLV-1.fa $WORKING_DIR/fastqs/${FASTQ_NAME}R1_001.fastq.gz $WORKING_DIR/fastqs/${FASTQ_NAME}R2_001.fastq.gz | samtools view -o $WORKING_DIR/bams/${SAMPLE}.bam -Shb /dev/stdin 2>/$WORKING_DIR/logs/${SAMPLE}.alignment.log
 done
 
 exit
