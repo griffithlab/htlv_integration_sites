@@ -21,7 +21,8 @@ export FASTQ_NAMES=("Ratner_40_SIC_935_196_GTCCTGCCGA_AATACTAATA_S13_" "Ratner_4
 
 export PAIRS=("R1" "R2")
 
-export SEQS=("TTAGTACACA" "AATCATGTGT" "TGACAATGAC" "ACTGTTACTG")
+export SEQS=("TTAGTACACA" "ACACATGATT" "AATCATGTGT" "TGTGTACTAA" "TGACAATGAC" "CAGTAACAGT" "ACTGTTACTG" "GTCATTGTCA")
+
 ```
 
 #### Download the data
@@ -41,13 +42,16 @@ ls -1 fastqs/*| perl -ne 'chomp; if ($_ =~ /(.*)\_\S+\_\S+\.fastq\.gz$/){print "
 ```
 
 #### Investigate the four supplied possible integration characteristic sequences:
-TTAGTACACA / AATCATGTGT
-TGACAATGAC / ACTGTTACTG
+Search for the characteristic sequences provided by the data creators. To be comprehensive search every read for the sequence, its reverse, its complement, and its reverse complement as below:
+
+- Seq1=TTAGTACACA / Seq1-rev=ACACATGATT / Seq1-comp=AATCATGTGT / Seq1-rev-comp=TGTGTACTAA
+- Seq2=TGACAATGAC / Seq2-rev=CAGTAACAGT / Seq2-comp=ACTGTTACTG / Seq2-rev-comp=GTCATTGTCA
 
 ```bash
 
 cd $WORKING_DIR
 for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
+  echo -e "\n${FASTQ_NAME}"
   for PAIR in "${PAIRS[@]}"; do
     for SEQ in "${SEQS[@]}"; do
       ANSWER=$(zcat fastqs/${FASTQ_NAME}${PAIR}_001.fastq.gz | awk 'NR % 4 == 2' | grep $SEQ | wc -l)
@@ -57,7 +61,9 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
 done
 ```
 
-Based on this analysis it seems that for these data in the RAW read sequences we only really see the "TGACAATGAC" sequence and only in Read 2 files
+Based on this analysis it seems that for these data in the RAW read sequences we only really see:
+- the "GTCATTGTCA" sequence in Read 1 files (Seq2-rev-comp above)
+- the "TGACAATGAC" sequence in Read 2 files (Seq2 above)
 
 ####
 Summarize the total read counts for each fastq file
@@ -79,7 +85,10 @@ for FASTQ_NAME in "${FASTQ_NAMES[@]}"; do
     echo -e "\nProcessing FASTQ: $FASTQ_NAME (R2 only)"
     SAMPLE=$(echo $FASTQ_NAME | awk -F_ '{print $2}')
     echo "Will name output using sample name: $SAMPLE"
-    zcat fastqs/${FASTQ_NAME}R2_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TGACAATGAC' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
+    zcat fastqs/${FASTQ_NAME}R1_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'GTCATTGTCA' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_R1_ltr_integration_seq_read_ids.txt
+    zcat fastqs/${FASTQ_NAME}R2_001.fastq.gz | awk 'NR % 4 == 1 {read_name = substr($1, 2)} NR % 4 == 2 {print read_name, $0}' | grep -P 'TGACAATGAC' | cut -f 1 -d ' ' | sort | uniq > readlists/${SAMPLE}_R2_ltr_integration_seq_read_ids.txt
+    cat readlists/${SAMPLE}_R1_ltr_integration_seq_read_ids.txt readlists/${SAMPLE}_R2_ltr_integration_seq_read_ids.txt | sort | uniq > readlists/${SAMPLE}_ltr_integration_seq_read_ids.txt
+    rm readlists/${SAMPLE}_R1_ltr_integration_seq_read_ids.txt readlists/${SAMPLE}_R2_ltr_integration_seq_read_ids.txt
 done
 ```
 
